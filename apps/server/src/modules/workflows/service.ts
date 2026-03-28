@@ -7,12 +7,9 @@ export abstract class Workflow {
     return workflows;
   }
 
-  static async createWorkflow() {
+  static async testAI() {
     await inngest.send({
-      name: "test/hello.world",
-      data: {
-        email: "wikky@gmail.com"
-      }
+      name: "execute/ai"
     })
   }
 }
