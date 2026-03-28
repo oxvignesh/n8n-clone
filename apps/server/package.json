@@ -9,9 +9,13 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.64",
+    "@ai-sdk/google": "^3.0.53",
+    "@ai-sdk/openai": "^3.0.48",
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/jwt": "^1.4.1",
     "@workspace/db": "workspace:*",
+    "ai": "^6.0.141",
     "elysia": "latest",
     "inngest": "^4.1.0"
   },
