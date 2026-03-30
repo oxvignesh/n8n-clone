@@ -1,15 +1,14 @@
 import { Elysia } from "elysia"
-
-import { Workflow } from "./service"
-import { WorkflowModel } from "./model"
 import { isAuthenticated } from "../../middleware/auth"
+import { WorkflowModel } from "./model"
+import { Workflow } from "./service"
 
 export const app = new Elysia({ prefix: "/api/workflows" })
-// .use(isAuthenticated)
+  .use(isAuthenticated)
   .get(
     "/",
-    async ({ status }) => {
-      const workflows = await Workflow.getWorkflows()
+    async ({ status, body }) => {
+      const workflows = await Workflow.getWorkflows(body.page, body.pageSize, body.search)
 
       if (!workflows) {
         return status(400, {
@@ -17,27 +16,99 @@ export const app = new Elysia({ prefix: "/api/workflows" })
         })
       }
 
-      return {workflows}
+      return workflows
     },
     {
+      body: WorkflowModel.getWorkflows,
       response: {
-        200: WorkflowModel.getWorkflows,
+        200: WorkflowModel.getWorkflowsSuccess,
         400: WorkflowModel.getWorkflowsFailed,
       },
     }
   )
-  .post(
-    "/test-ai",
-    async ({ status }) => {
-      const test = await Workflow.testAI()
-
-      return status(200, {
-        message: "AI job queued",
-      })
+  .get(
+    "/:id",
+    async ({ status, params }) => {
+      const workflow = await Workflow.getWorkflow(params.id)
+      if (!workflow) {
+        return status(400, {
+          message: "Error while fetching workflow",
+        })
+      }
+      return {
+        id: workflow.id,
+        name: workflow.name,
+      }
     },
     {
       response: {
-        200: WorkflowModel.testAI,
+        200: WorkflowModel.getWorkflowSuccess,
+        400: WorkflowModel.getWorkflowFailed,
+      },
+    }
+  )
+  .post(
+    "/create",
+    async ({ userId, status, body }) => {
+      const workflow = await Workflow.createWorkflow(body.name, userId)
+      if (!workflow) {
+        return status(400, {
+          message: "Error while creating workflow",
+        })
+      }
+      return {
+        id: workflow.id,
+        name: workflow.name,
+      }
+    },
+    {
+      body: WorkflowModel.createWorkflow,
+      response: {
+        200: WorkflowModel.createWorkflowSuccess,
+        400: WorkflowModel.createWorkflowFailed,
+      },
+    }
+  )
+  .put(
+    "/update",
+    async ({ userId, status, body }) => {
+      const workflow = await Workflow.updateWorkflow(body.id, body.name, userId)
+      if (!workflow) {
+        return status(400, {
+          message: "Error while updating workflow",
+        })
+      }
+      return {
+        id: workflow.id,
+        name: workflow.name,
+      }
+    },
+    {
+      body: WorkflowModel.updateWorkflow,
+      response: {
+        200: WorkflowModel.updateWorkflowSuccess,
+        400: WorkflowModel.updateWorkflowFailed,
+      },
+    }
+  )
+  .delete(
+    "/",
+    async ({ userId, status, body }) => {
+      const workflow = await Workflow.deleteWorkflow(body.id, userId)
+      if (!workflow) {
+        return status(400, {
+          message: "Error while deleting workflow",
+        })
+      }
+      return {
+        id: workflow.id,
+      }
+    },
+    {
+      body: WorkflowModel.deleteWorkflow,
+      response: {
+        200: WorkflowModel.deleteWorkflowSuccess,
+        400: WorkflowModel.deleteWorkflowFailed,
       },
     }
   )

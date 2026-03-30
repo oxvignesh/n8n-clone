@@ -1,3 +1,6 @@
+import { useAuthMe } from "@/hooks/use-auth-me"
+import { serverClient } from "@/lib/constants"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   Sidebar,
   SidebarContent,
@@ -9,8 +12,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
-import { FolderOpenIcon, HistoryIcon, KeyIcon, LogOutIcon } from "lucide-react"
-import { Link, useLocation } from "react-router"
+import { FolderOpenIcon, HistoryIcon, KeyIcon, LogInIcon, LogOutIcon } from "lucide-react"
+import { Link, useLocation, useNavigate } from "react-router"
 
 const menuItems = [
   {
@@ -37,6 +40,22 @@ const menuItems = [
 
 const AppSidebar = () => {
   const { pathname } = useLocation()
+  const queryClient = useQueryClient()
+  const { data, isLoading } = useAuthMe()
+  const navigate = useNavigate()
+
+  const signOut = useMutation({
+    mutationFn: async () => {
+      const res = await serverClient.api.auth["sign-out"].post({})
+      if (res.error) throw res.error
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(["auth-me"], null)
+      queryClient.invalidateQueries({ queryKey: ["auth-me"] })
+      navigate("/")
+    },
+  })
 
   return (
     <Sidebar collapsible="icon">
@@ -95,16 +114,34 @@ const AppSidebar = () => {
 
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Sign out"
-              className="h-10 cursor-pointer gap-x-4 px-4"
-              onClick={() => {}}
-            >
-              <LogOutIcon className="h-4 w-4" />
-              <span>Sign out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {isLoading ? (
+            <div className="h-7 w-7 animate-pulse rounded-full bg-zinc-900"></div>
+          ) : (
+            data ? (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Sign out"
+                  className="h-10 cursor-pointer gap-x-4 px-4"
+                  onClick={() => signOut.mutate()}
+                  disabled={signOut.isPending}
+                >
+                  <LogOutIcon className="h-4 w-4" />
+                  <span>Sign out</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ) : (
+              <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip="Sign in"
+                className="h-10 cursor-pointer gap-x-4 px-4"
+                onClick={() => navigate("/sign-in")}
+              >
+                <LogInIcon className="h-4 w-4" />
+                <span>Sign in</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            )
+          )}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
