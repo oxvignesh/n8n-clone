@@ -3,7 +3,7 @@ import { PAGINATION } from "../../lib/constants"
 
 export namespace WorkflowModel {
   export const getWorkflows = t.Object({
-    page: t.Number({default: PAGINATION.DEFAULT_PAGE}),
+    page: t.Number({default: PAGINATION.DEFAULT_PAGE, minimum: 1}),
     pageSize: t.Number({default: PAGINATION.DEFAULT_PAGE_SIZE, minimum: PAGINATION.MIN_PAGE_SIZE, maximum: PAGINATION.MAX_PAGE_SIZE}),
     search: t.String({default: ""}),
   })
