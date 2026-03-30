@@ -1,15 +1,4 @@
-import { AlertTriangleIcon, Loader2Icon, MoreVerticalIcon, PackageOpenIcon, PlusIcon, SearchIcon, TrashIcon } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@workspace/ui/components/empty";
-import { cn } from "@workspace/ui/lib/utils";
 import {
   Card,
   CardContent,
@@ -22,6 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/empty";
+import { Input } from "@workspace/ui/components/input";
+import { cn } from "@workspace/ui/lib/utils";
+import { AlertTriangleIcon, CircleOffIcon, Loader2Icon, MoreVerticalIcon, PlusIcon, SearchIcon, TrashIcon } from "lucide-react";
 import { Link } from "react-router";
 
 type EntityHeaderProps = {
@@ -219,7 +219,7 @@ export const EmptyView = ({
     <Empty className="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <PackageOpenIcon />
+          <CircleOffIcon />
         </EmptyMedia>
       </EmptyHeader>
       <EmptyTitle>
@@ -344,14 +344,20 @@ export const EntityItem = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={(e: React.MouseEvent) => e.stopPropagation()} 
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
                     >
                       <MoreVerticalIcon className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
                   >
                     <DropdownMenuItem onClick={handleRemove}>
                       <TrashIcon className="size-4" />
