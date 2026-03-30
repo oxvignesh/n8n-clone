@@ -7,8 +7,8 @@ export const app = new Elysia({ prefix: "/api/workflows" })
   .use(isAuthenticated)
   .get(
     "/",
-    async ({ status, body }) => {
-      const workflows = await Workflow.getWorkflows(body.page, body.pageSize, body.search)
+    async ({ status, query }) => {
+      const workflows = await Workflow.getWorkflows(query.page, query.pageSize, query.search)
 
       if (!workflows) {
         return status(400, {
@@ -19,7 +19,7 @@ export const app = new Elysia({ prefix: "/api/workflows" })
       return workflows
     },
     {
-      body: WorkflowModel.getWorkflows,
+      query: WorkflowModel.getWorkflows,
       response: {
         200: WorkflowModel.getWorkflowsSuccess,
         400: WorkflowModel.getWorkflowsFailed,
