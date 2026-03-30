@@ -15,7 +15,8 @@ import { serverClient } from "@/lib/constants"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import toast from "react-hot-toast"
-
+import { WorkflowIcon } from "lucide-react"
+import { formatDistanceToNow } from "date-fns"
 
 export default function Workflows() {
   return <WorkflowsContent />
@@ -66,7 +67,12 @@ export const WorkflowsSearch = ({
   )
 }
 
-type WorkflowRow = { id: string; name: string }
+type WorkflowRow = {
+  id: string
+  name: string
+  updatedAt: Date
+  createdAt: Date
+}
 
 export const WorkflowsList = ({
   items,
@@ -95,13 +101,24 @@ export const WorkflowsList = ({
     <EntityList<WorkflowRow>
       items={items}
       getKey={(w) => w.id}
-      emptyView={
-        <EmptyView message="Create a workflow to get started." />
-      }
+      emptyView={<EmptyView message="No workflows found" />}
       renderItem={(workflow) => (
         <EntityItem
           href={`/workflows/${workflow.id}`}
           title={workflow.name}
+          subtitle={
+            <>
+              Updated{" "}
+              {formatDistanceToNow(workflow.updatedAt, { addSuffix: true })}{" "}
+              &bull; Created{" "}
+              {formatDistanceToNow(workflow.createdAt, { addSuffix: true })}
+            </>
+          }
+          image={
+            <div className="flex size-8 items-center justify-center">
+              <WorkflowIcon className="size-5 text-muted-foreground" />
+            </div>
+          }
           onRemove={() => onRemove(workflow.id)}
           isRemoving={removingId === workflow.id}
         />
@@ -191,12 +208,7 @@ function WorkflowsContent() {
   return (
     <WorkflowsContainer
       header={<WorkflowsHeader disabled={isLoading} />}
-      search={
-        <WorkflowsSearch
-          value={searchValue}
-          onChange={onSearchChange}
-        />
-      }
+      search={<WorkflowsSearch value={searchValue} onChange={onSearchChange} />}
       pagination={
         <WorkflowsPagination
           disabled={isLoading}
