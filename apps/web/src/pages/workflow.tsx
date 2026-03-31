@@ -1,8 +1,7 @@
+import { Editor } from "@/components/editor/editor"
 
 const Workflow = () => {
-  return (
-    <div>Workflow</div>
-  )
+  return <Editor />
 }
 
 export default Workflow

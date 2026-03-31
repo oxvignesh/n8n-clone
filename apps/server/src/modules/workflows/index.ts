@@ -28,17 +28,14 @@ export const app = new Elysia({ prefix: "/api/workflows" })
   )
   .get(
     "/:id",
-    async ({ status, params }) => {
-      const workflow = await Workflow.getWorkflow(params.id)
+    async ({ status, params, userId }) => {
+      const workflow = await Workflow.getWorkflow(params.id, userId)
       if (!workflow) {
         return status(400, {
           message: "Error while fetching workflow",
         })
       }
-      return {
-        id: workflow.id,
-        name: workflow.name,
-      }
+      return workflow
     },
     {
       response: {
@@ -70,9 +67,9 @@ export const app = new Elysia({ prefix: "/api/workflows" })
     }
   )
   .put(
-    "/update",
+    "/update-name",
     async ({ userId, status, body }) => {
-      const workflow = await Workflow.updateWorkflow(body.id, body.name, userId)
+      const workflow = await Workflow.updateWorkflowName(body.id, body.name, userId)
       if (!workflow) {
         return status(400, {
           message: "Error while updating workflow",

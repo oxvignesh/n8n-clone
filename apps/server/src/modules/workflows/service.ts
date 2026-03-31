@@ -1,4 +1,5 @@
 import { prisma } from "@workspace/db"
+import { NodeType } from "@workspace/db/generated/prisma/enums"
 
 export abstract class Workflow {
   static async getWorkflows(page: number, pageSize: number, search: string) {
@@ -34,13 +35,43 @@ export abstract class Workflow {
     }
   }
 
-  static async getWorkflow(id: string) {
+  static async getWorkflow(id: string, userId: string) {
     const workflow = await prisma.workflow.findUnique({
       where: {
         id: id,
+        userId: userId,
+      },
+      include: {
+        nodes: true,
+        connections: true,
       },
     })
-    return workflow
+
+    if (!workflow) {
+      return null
+    }
+
+    const nodes = workflow.nodes.map((node) => ({
+      id: node.id,
+      type: String(node.type),
+      position: node.position as { x: number; y: number },
+      data: node.data as Record<string, unknown> || {},
+    }))
+
+    const edges = workflow.connections.map((connection) => ({
+      id: connection.id,
+      source: connection.fromNodeId,
+      target: connection.toNodeId,
+      sourceHandle: connection.fromOutput,
+      targetHandle: connection.toInput,
+    }))
+
+    return {
+      id: workflow.id,
+      name: workflow.name,
+      nodes,
+      edges,
+    }
   }
 
   static async createWorkflow(name: string, userId: string) {
@@ -48,11 +79,21 @@ export abstract class Workflow {
       data: {
         name: name,
         userId: userId,
+        nodes: {
+          create: {
+            type: NodeType.INITIAL,
+            position: {
+              x: 0,
+              y: 0,
+            },
+            name: NodeType.INITIAL,
+          },
+        },
       },
     })
     return workflow
   }
-  static async updateWorkflow(id: string, name: string, userId: string) {
+  static async updateWorkflowName(id: string, name: string, userId: string) {
     const workflow = await prisma.workflow.update({
       where: {
         id: id,
