@@ -37,9 +37,25 @@ export namespace WorkflowModel {
   })
   export type getWorkflow = typeof getWorkflow.static
 
-  export const getWorkflowSuccess = t.Object({
+  export const getWorkflowSuccess =  t.Object({
     id: t.String(),
     name: t.String(),
+    nodes: t.Array(t.Object({
+      id: t.String(),
+      type: t.String(),
+      position: t.Object({
+        x: t.Number(),
+        y: t.Number(),
+      }),
+      data: t.Record(t.String(), t.Unknown()),
+    })),
+    edges: t.Array(t.Object({
+      id: t.String(),
+      source: t.String(),
+      target: t.String(),
+      sourceHandle: t.String(),
+      targetHandle: t.String(),
+    })),
   })
   export type getWorkflowSuccess = typeof getWorkflowSuccess.static
 

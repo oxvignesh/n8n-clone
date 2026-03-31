@@ -67,12 +67,10 @@ export const WorkflowsSearch = ({
   )
 }
 
-type WorkflowRow = {
-  id: string
-  name: string
-  updatedAt: Date
-  createdAt: Date
-}
+type WorkflowsGetResult = Awaited<
+  ReturnType<typeof serverClient.api.workflows.get>
+>
+type Workflow = NonNullable<WorkflowsGetResult["data"]>["items"][number]
 
 export const WorkflowsList = ({
   items,
@@ -82,7 +80,7 @@ export const WorkflowsList = ({
   onRemove,
   removingId,
 }: {
-  items: WorkflowRow[]
+  items: Workflow[]
   isLoading: boolean
   isError: boolean
   errorMessage?: string
@@ -98,7 +96,7 @@ export const WorkflowsList = ({
   }
 
   return (
-    <EntityList<WorkflowRow>
+    <EntityList<Workflow>
       items={items}
       getKey={(w) => w.id}
       emptyView={<EmptyView message="No workflows found" />}
