@@ -1,5 +1,5 @@
 import { prisma } from "@workspace/db"
-import { NodeType } from "@workspace/db/generated/prisma/enums"
+import { NodeType } from "@workspace/db"
 
 export abstract class Workflow {
   static async getWorkflows(page: number, pageSize: number, search: string) {
