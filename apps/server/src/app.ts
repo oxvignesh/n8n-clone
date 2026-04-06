@@ -6,6 +6,8 @@ import { app as inngestApp } from "./modules/inngest"
 
 export const app = new Elysia()
     .use(cors())
-    .use(authApp).use(workflowApp).use(inngestApp)
+    .use(inngestApp)
+    .use(authApp)
+    .use(workflowApp)
 
 export type App = typeof app

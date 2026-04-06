@@ -1,6 +1,7 @@
 import { prisma } from "@workspace/db"
 import { NodeType } from "@workspace/db"
 import { WorkflowModel } from "./model"
+import { inngest } from "../../inngest/client"
 
 export abstract class Workflow {
   static async getWorkflows(page: number, pageSize: number, search: string) {
@@ -155,6 +156,24 @@ export abstract class Workflow {
     })
     return workflow
   }
+  static async executeWorkflow(id: string, userId: string) {
+    const workflow = await prisma.workflow.findUniqueOrThrow({
+      where: {
+        id: id,
+        userId: userId,
+      },
+    })
+
+    await inngest.send({
+      name: "workflows/execute.workflow",
+      data: {
+        workflowId: id,
+      },
+    })
+
+    return workflow
+  }
+
   static async deleteWorkflow(id: string, userId: string) {
     const workflow = await prisma.workflow.delete({
       where: {

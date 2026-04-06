@@ -31,6 +31,7 @@ import { useParams } from "react-router"
 
 import { useTheme } from "@/components/theme-provider"
 import { AddNodeButton } from "./add-node-button"
+import { ExecuteWorkflowButton } from "./execute-workflow-button"
 
 export const Editor = () => {
   const { theme } = useTheme()
@@ -117,7 +118,7 @@ const EditorFlow = ({ workflow, theme }: EditorFlowProps) => {
         </Panel>
         {hasManualTrigger && (
           <Panel position="bottom-center">
-            {/* <ExecuteWorkflowButton workflowId={workflowId} /> */}
+            <ExecuteWorkflowButton workflowId={workflow.id} />
           </Panel>
         )}
       </ReactFlow>
