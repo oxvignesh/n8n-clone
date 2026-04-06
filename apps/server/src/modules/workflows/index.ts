@@ -67,9 +67,9 @@ export const app = new Elysia({ prefix: "/api/workflows" })
     }
   )
   .put(
-    "/update-name",
+    "/update",
     async ({ userId, status, body }) => {
-      const workflow = await Workflow.updateWorkflowName(body.id, body.name, userId)
+      const workflow = await Workflow.updateWorkflow(body.id, body.nodes, body.edges, userId)
       if (!workflow) {
         return status(400, {
           message: "Error while updating workflow",
@@ -85,6 +85,28 @@ export const app = new Elysia({ prefix: "/api/workflows" })
       response: {
         200: WorkflowModel.updateWorkflowSuccess,
         400: WorkflowModel.updateWorkflowFailed,
+      },
+    }
+  )
+  .put(
+    "/update-name",
+    async ({ userId, status, body }) => {
+      const workflow = await Workflow.updateWorkflowName(body.id, body.name, userId)
+      if (!workflow) {
+        return status(400, {
+          message: "Error while updating workflow name",
+        })
+      }
+      return {
+        id: workflow.id,
+        name: workflow.name,
+      }
+    },
+    {
+      body: WorkflowModel.updateWorkflowName,
+      response: {
+        200: WorkflowModel.updateWorkflowNameSuccess,
+        400: WorkflowModel.updateWorkflowNameFailed,
       },
     }
   )

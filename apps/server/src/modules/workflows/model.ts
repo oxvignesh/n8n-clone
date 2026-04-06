@@ -31,6 +31,26 @@ export namespace WorkflowModel {
   })
   export type getWorkflowsFailed = typeof getWorkflowsFailed.static
 
+  export const ReactFlowNode = t.Object({
+    id: t.String(),
+    type: t.Nullable(t.String()),
+    position: t.Object({
+      x: t.Number(),
+      y: t.Number(),
+    }),
+    data: t.Record(t.String(), t.Optional(t.Any())),
+  })
+  export type ReactFlowNode = typeof ReactFlowNode.static
+
+  export const ReactFlowEdge = t.Object({
+    id: t.Optional(t.String()),
+    source: t.String(),
+    target: t.String(),
+    sourceHandle: t.Nullable(t.String()),
+    targetHandle: t.Nullable(t.String()),
+  })
+  export type ReactFlowEdge = typeof ReactFlowEdge.static
+
   export const getWorkflow = t.Object({
     id: t.String(),
     name: t.String(),
@@ -40,22 +60,8 @@ export namespace WorkflowModel {
   export const getWorkflowSuccess =  t.Object({
     id: t.String(),
     name: t.String(),
-    nodes: t.Array(t.Object({
-      id: t.String(),
-      type: t.String(),
-      position: t.Object({
-        x: t.Number(),
-        y: t.Number(),
-      }),
-      data: t.Record(t.String(), t.Unknown()),
-    })),
-    edges: t.Array(t.Object({
-      id: t.String(),
-      source: t.String(),
-      target: t.String(),
-      sourceHandle: t.String(),
-      targetHandle: t.String(),
-    })),
+    nodes: t.Array(ReactFlowNode),
+    edges: t.Array(ReactFlowEdge),
   })
   export type getWorkflowSuccess = typeof getWorkflowSuccess.static
 
@@ -82,7 +88,8 @@ export namespace WorkflowModel {
 
   export const updateWorkflow = t.Object({
     id: t.String(),
-    name: t.String({minLength: 3, maxLength: 20, regex: /^[a-zA-Z0-9]+$/}),
+    nodes: t.Array(ReactFlowNode),
+    edges: t.Array(ReactFlowEdge),
   })
   export type updateWorkflow = typeof updateWorkflow.static
 
@@ -96,6 +103,23 @@ export namespace WorkflowModel {
     message: t.Literal("Error while updating workflow"),
   })
   export type updateWorkflowFailed = typeof updateWorkflowFailed.static
+
+  export const updateWorkflowName = t.Object({
+    id: t.String(),
+    name: t.String({minLength: 3, maxLength: 20, regex: /^[a-zA-Z0-9]+$/}),
+  })
+  export type updateWorkflowName = typeof updateWorkflowName.static
+
+  export const updateWorkflowNameSuccess = t.Object({
+    id: t.String(),
+    name: t.String(),
+  })
+  export type updateWorkflowNameSuccess = typeof updateWorkflowNameSuccess.static
+
+  export const updateWorkflowNameFailed = t.Object({
+    message: t.Literal("Error while updating workflow name"),
+  })
+  export type updateWorkflowNameFailed = typeof updateWorkflowNameFailed.static
 
   export const deleteWorkflow = t.Object({
     id: t.String(),

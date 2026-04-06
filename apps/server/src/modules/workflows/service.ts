@@ -1,5 +1,6 @@
 import { prisma } from "@workspace/db"
 import { NodeType } from "@workspace/db"
+import { WorkflowModel } from "./model"
 
 export abstract class Workflow {
   static async getWorkflows(page: number, pageSize: number, search: string) {
@@ -36,7 +37,7 @@ export abstract class Workflow {
   }
 
   static async getWorkflow(id: string, userId: string) {
-    const workflow = await prisma.workflow.findUnique({
+    const workflow = await prisma.workflow.findUniqueOrThrow({
       where: {
         id: id,
         userId: userId,
@@ -47,15 +48,11 @@ export abstract class Workflow {
       },
     })
 
-    if (!workflow) {
-      return null
-    }
-
     const nodes = workflow.nodes.map((node) => ({
       id: node.id,
       type: String(node.type),
       position: node.position as { x: number; y: number },
-      data: node.data as Record<string, unknown> || {},
+      data: (node.data as Record<string, unknown>) || {},
     }))
 
     const edges = workflow.connections.map((connection) => ({
@@ -93,6 +90,59 @@ export abstract class Workflow {
     })
     return workflow
   }
+  static async updateWorkflow(
+    id: string,
+    nodes: WorkflowModel.ReactFlowNode[],
+    edges: WorkflowModel.ReactFlowEdge[],
+    userId: string
+  ) {
+    const workflow = await prisma.workflow.findUniqueOrThrow({
+      where: {
+        id: id,
+        userId: userId,
+      },
+    })
+
+    //transaction
+    await prisma.$transaction(async (tx) => {
+      //delete all nodes and connections
+      await tx.node.deleteMany({
+        where: { workflowId: id },
+      })
+
+      //create new nodes
+      await tx.node.createMany({
+        data: nodes.map((node) => ({
+          id: node.id,
+          workflowId: id,
+          name: node.type || "unknown",
+          type: node.type as NodeType,
+          position: node.position,
+          data: node.data || {},
+        })),
+      })
+
+      //create new connections
+      await tx.connection.createMany({
+        data: edges.map((edge) => ({
+          workflowId: id,
+          fromNodeId: edge.source,
+          toNodeId: edge.target,
+          fromOutput: edge.sourceHandle || "main",
+          toInput: edge.targetHandle || "main",
+        })),
+      })
+
+      //update the workflow updatedAt timestamp
+      await tx.workflow.update({
+        where: { id: id },
+        data: { updatedAt: new Date() },
+      })
+    })
+
+    return workflow
+  }
+
   static async updateWorkflowName(id: string, name: string, userId: string) {
     const workflow = await prisma.workflow.update({
       where: {

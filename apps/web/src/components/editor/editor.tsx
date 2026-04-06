@@ -17,12 +17,13 @@ import {
 import { useCallback, useMemo, useState } from "react"
 
 import { serverClient } from "@/lib/constants"
+import type { WorkflowDetail } from "@/lib/workflow-api-types"
 import { nodeComponents } from "@/lib/node-components"
 import { NodeType } from "@/lib/node-types"
 import { useQuery } from "@tanstack/react-query"
 import "@xyflow/react/dist/style.css"
-// import { useSetAtom } from "jotai"
-// import { editorAtom } from "../store/atoms"
+import { useSetAtom } from "jotai"
+import { editorAtom } from "./store/atoms"
 // import { AddNodeButton } from "./add-node-button"
 // import { ExecuteWorkflowButton } from "./execute-workflow-button"
 
@@ -60,14 +61,12 @@ export const Editor = () => {
 }
 
 type EditorFlowProps = {
-  workflow: {
-    nodes: Node[]
-    edges: Edge[]
-  }
+  workflow: WorkflowDetail
   theme: "dark" | "light" | "system"
 }
 
 const EditorFlow = ({ workflow, theme }: EditorFlowProps) => {
+  const setEditor = useSetAtom(editorAtom);
   const [nodes, setNodes] = useState<Node[]>(() => workflow.nodes as Node[])
   const [edges, setEdges] = useState<Edge[]>(() => workflow.edges as Edge[])
 
@@ -101,7 +100,7 @@ const EditorFlow = ({ workflow, theme }: EditorFlowProps) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeComponents}
-        // onInit={setEditor}
+        onInit={setEditor}
         fitView
         proOptions={{ hideAttribution: true }}
         snapGrid={[10, 10]}

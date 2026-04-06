@@ -8,43 +8,69 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { SidebarTrigger } from "@workspace/ui/components/sidebar"
-// import {
-//   useUpdateWorkflow
-// } from "@/features/workflows/hooks/use-workflows"
 import { serverClient } from "@/lib/constants"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-// import { useAtomValue } from "jotai"
+import { useAtomValue } from "jotai"
+import { editorAtom } from "./store/atoms"
 import { SaveIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "react-hot-toast"
 import { Link, useParams } from "react-router"
-// import { editorAtom } from "../store/atoms"
+
+import type { WorkflowDetail } from "@/lib/workflow-api-types"
 
 export const EditorSaveButton = () => {
-  // const { workflowId } = useParams()
-  // const editor = useAtomValue(editorAtom)
-  // const saveWorkflow = useUpdateWorkflow()
+  const { workflowId } = useParams()
+  const queryClient = useQueryClient()
+  const updateWorkflow = useMutation({
+    mutationFn: async ({
+      nodes,
+      edges,
+    }: {
+      nodes: WorkflowDetail["nodes"]
+      edges: WorkflowDetail["edges"]
+    }) => {
+      const res = await serverClient.api.workflows["update"].put({
+        id: workflowId!,
+        nodes,
+        edges,
+      })
+      if (res.error) throw res.error
+      return res.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["workflow", workflowId],
+      })
+      toast.success("Workflow updated")
+    },
+    onError: () => {
+      toast.error("Failed to update workflow")
+    },
+  })
 
-  // const handleSave = () => {
-    // if (!editor) {
-    //   return
-    // }
+  const editor = useAtomValue(editorAtom)
 
-    // const nodes = editor.getNodes()
-    // const edges = editor.getEdges()
+  const handleSave = () => {
+    if (!editor) {
+      return
+    }
 
-    // saveWorkflow.mutate({
-    //   id: workflowId,
-    //   nodes,
-    //   edges,
-    // })
-  // }
+    const nodes = editor.getNodes()
+    const edges = editor.getEdges()
+
+    updateWorkflow.mutate({
+      nodes: nodes as WorkflowDetail["nodes"],
+      edges: edges as WorkflowDetail["edges"],
+    })
+  }
 
   return (
     <div className="ml-auto">
-      <Button size="sm" 
-      // onClick={handleSave} 
-      // disabled={saveWorkflow.isPending}
+      <Button
+        size="sm"
+        disabled={updateWorkflow.isPending}
+        onClick={handleSave}
       >
         <SaveIcon className="size-4" />
         Save
@@ -55,7 +81,7 @@ export const EditorSaveButton = () => {
 
 export const EditorNameInput = () => {
   const { workflowId } = useParams()
-  const { data: workflow} = useQuery({
+  const { data: workflow } = useQuery({
     queryKey: ["workflow", workflowId],
     queryFn: async () => {
       const res = await serverClient.api.workflows({ id: workflowId! }).get()
@@ -75,11 +101,13 @@ export const EditorNameInput = () => {
       return res.data
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["workflow", workflowId] })
+      await queryClient.invalidateQueries({
+        queryKey: ["workflow", workflowId],
+      })
       toast.success("Workflow updated")
     },
     onError: () => {
-      toast.error("Failed to update workflow")
+      toast.error("Failed to update workflow name")
     },
   })
 
@@ -131,7 +159,9 @@ export const EditorNameInput = () => {
         disabled={updateWorkflowName.isPending}
         ref={inputRef}
         value={name}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setName(e.target.value)
+        }
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         className="h-7 w-auto min-w-[100px] px-2"
@@ -173,7 +203,7 @@ export const EditorHeader = () => {
       <SidebarTrigger />
       <div className="flex w-full flex-row items-center justify-between gap-x-4">
         <EditorBreadcrumbs />
-        <EditorSaveButton/>
+        <EditorSaveButton />
       </div>
     </header>
   )

@@ -12,6 +12,7 @@ import {
 import { useWorkflowsParams } from "@/hooks/use-workflow-params"
 import { useEntitySearch } from "@/hooks/use-entity-search"
 import { serverClient } from "@/lib/constants"
+import type { WorkflowListItem } from "@/lib/workflow-api-types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import toast from "react-hot-toast"
@@ -67,11 +68,6 @@ export const WorkflowsSearch = ({
   )
 }
 
-type WorkflowsGetResult = Awaited<
-  ReturnType<typeof serverClient.api.workflows.get>
->
-type Workflow = NonNullable<WorkflowsGetResult["data"]>["items"][number]
-
 export const WorkflowsList = ({
   items,
   isLoading,
@@ -80,7 +76,7 @@ export const WorkflowsList = ({
   onRemove,
   removingId,
 }: {
-  items: Workflow[]
+  items: WorkflowListItem[]
   isLoading: boolean
   isError: boolean
   errorMessage?: string
@@ -96,7 +92,7 @@ export const WorkflowsList = ({
   }
 
   return (
-    <EntityList<Workflow>
+    <EntityList<WorkflowListItem>
       items={items}
       getKey={(w) => w.id}
       emptyView={<EmptyView message="No workflows found" />}

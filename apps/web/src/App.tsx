@@ -4,6 +4,7 @@ import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { createBrowserRouter, RouterProvider } from "react-router"
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7"
 import { RootLayoutA, RootLayoutB, RootLayoutC } from "./components/layout"
+import { Provider as JotaiProvider } from "jotai"
 import Landing from "./pages/landing"
 import Credential from "./pages/credential"
 import Credentials from "./pages/credentials"
@@ -79,7 +80,9 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <NuqsAdapter>
-            <RouterProvider router={router} />
+            <JotaiProvider>
+              <RouterProvider router={router} />
+            </JotaiProvider>
           </NuqsAdapter>
         </TooltipProvider>
       </QueryClientProvider>
