@@ -110,6 +110,21 @@ export const app = new Elysia({ prefix: "/api/workflows" })
       },
     }
   )
+  .post("/execute", async ({ userId, status, body }) => {
+    const workflow = await Workflow.executeWorkflow(body.id, userId)
+    if (!workflow) {
+      return status(400, {
+        message: "Error while executing workflow",
+      })
+    }
+    return workflow
+  }, {
+    body: WorkflowModel.executeWorkflow,
+    response: {
+      200: WorkflowModel.executeWorkflowSuccess,
+      400: WorkflowModel.executeWorkflowFailed,
+    },
+  })
   .delete(
     "/",
     async ({ userId, status, body }) => {

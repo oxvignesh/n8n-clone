@@ -6,7 +6,6 @@ export const jwtSetup = jwt({
   secret: process.env.JWT_SECRET!,
 })
 
-/** Composable plugin — typed so `.use(isAuthenticated)` preserves route schemas (e.g. `body`). */
 export const isAuthenticated = new Elysia()
   .use(jwtSetup)
   .derive({ as: "global" }, async ({ cookie: { auth }, jwt, status }) => {

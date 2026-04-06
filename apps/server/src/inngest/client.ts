@@ -1,52 +1,58 @@
-import { createAnthropic } from "@ai-sdk/anthropic"
-import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { createOpenAI } from "@ai-sdk/openai"
-import { generateText } from "ai"
-import { Inngest } from "inngest"
+import { NodeType, prisma } from "@workspace/db"
+import { Inngest, NonRetriableError } from "inngest"
+import { topologicalSort } from "./utils"
+import { getExecutor } from "../lib/executor-registry"
 
 // create a client to send and receive events
 export const inngest = new Inngest({ id: "n8n-clone" })
 
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+const executeWorkflow = inngest.createFunction(
+  {
+    id: "execute-workflow",
+    triggers: [{ event: "workflows/execute.workflow" }],
+  },
+  async ({ event, step }) => {
+    const workflowId = event.data.workflowId
 
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
-})
+    if (!workflowId) {
+      throw new NonRetriableError("Workflow ID is missing")
+    }
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
-})
-
-//inngest functions
-const executeAI = inngest.createFunction(
-  { id: "execute-ai", triggers: [{ event: "execute/ai" }] },
-  async ({ step }) => {
-    const { steps: openaiSteps } = await step.ai.wrap("openai-generate-text", generateText, {
-      model: openai("gpt-4.1-mini"),
-      system: "You are a helpful assistant.",
-      prompt: "what is 2+2?",
+    const sortedNodes = await step.run("prepare-workflow", async () => {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: {
+          id: workflowId,
+        },
+        include: {
+          nodes: true,
+          connections: true,
+        },
+      })
+      return topologicalSort(workflow.nodes, workflow.connections)
     })
 
-    const { steps: anthropicSteps } = await step.ai.wrap("anthropic-generate-text", generateText, {
-      model: anthropic("claude-haiku-4-5"),
-      system: "You are a helpful assistant.",
-      prompt: "what is 2+2?",
-    })
+    //initialize context with any initial data from the trigger
+    let context = event.data.initialData || {}
 
-    const { steps: geminiSteps } = await step.ai.wrap("gemini-generate-text", generateText, {
-      model: google("gemini-2.5-flash"),
-      system: "You are a helpful assistant.",
-      prompt: "what is 2+2?",
-    })
+    // execute each node
+
+    for (const node of sortedNodes) {
+      const executor = getExecutor(node.type as NodeType)
+      context = await executor({
+        data: node.data as Record<string, unknown>,
+        nodeId: node.id,
+        userId: event.data.userId,
+        context,
+        step,
+      })
+    }
+
     return {
-      openaiSteps,
-      anthropicSteps,
-      geminiSteps
+      workflowId,
+      context,
     }
   }
 )
 
 // add the function to the exported array:
-export const functions = [executeAI]
+export const functions = [executeWorkflow]

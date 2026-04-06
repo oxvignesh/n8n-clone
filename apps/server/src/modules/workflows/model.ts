@@ -121,6 +121,22 @@ export namespace WorkflowModel {
   })
   export type updateWorkflowNameFailed = typeof updateWorkflowNameFailed.static
 
+  export const executeWorkflow = t.Object({
+    id: t.String(),
+  })
+  export type executeWorkflow = typeof executeWorkflow.static
+
+  export const executeWorkflowSuccess = t.Object({
+    id: t.String(),
+    name: t.String(),
+  })
+  export type executeWorkflowSuccess = typeof executeWorkflowSuccess.static
+
+  export const executeWorkflowFailed = t.Object({
+    message: t.Literal("Error while executing workflow"),
+  })
+  export type executeWorkflowFailed = typeof executeWorkflowFailed.static
+
   export const deleteWorkflow = t.Object({
     id: t.String(),
   })
