@@ -20,6 +20,7 @@
     "@workspace/db": "workspace:*",
     "ai": "^6.0.141",
     "elysia": "latest",
+    "handlebars": "^4.7.9",
     "inngest": "^4.1.0",
     "ky": "^2.0.0",
     "toposort": "^2.0.2",
