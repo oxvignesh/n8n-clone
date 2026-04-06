@@ -14,6 +14,7 @@ import {
 } from "@workspace/ui/components/sidebar"
 import { FolderOpenIcon, HistoryIcon, KeyIcon, LogInIcon, LogOutIcon } from "lucide-react"
 import { Link, useLocation, useNavigate } from "react-router"
+import n8nLogo from "@/assets/n8n-logo.svg"
 
 const menuItems = [
   {
@@ -72,7 +73,7 @@ const AppSidebar = () => {
             }
           >
             <img
-              src="src/assets/n8n-logo.svg"
+              src={n8nLogo}
               alt="n8n"
               width={30}
               height={30}
